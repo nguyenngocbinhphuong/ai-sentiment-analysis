@@ -45,8 +45,6 @@ score--;
 }
 });
 
-/* kết quả */
-
 let sentiment="";
 let reply="";
 
@@ -55,7 +53,7 @@ if(score>0){
 sentiment="😊 Tích cực (Score: "+score+")";
 
 reply=
-"💬 Gợi ý phản hồi:<br>Cảm ơn bạn đã tin tưởng và sử dụng sản phẩm của chúng tôi!";
+"💬 Phản hồi:<br>Cảm ơn bạn đã tin tưởng và sử dụng sản phẩm của chúng tôi!";
 
 resultDiv.className="result positive";
 
@@ -66,7 +64,7 @@ else if(score<0){
 sentiment="😡 Tiêu cực (Score: "+score+")";
 
 reply=
-"💬 Gợi ý phản hồi:<br>Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt. Chúng tôi sẽ kiểm tra và cải thiện dịch vụ.";
+"💬 Phản hồi:<br>Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt. Chúng tôi sẽ kiểm tra và cải thiện dịch vụ.";
 
 resultDiv.className="result negative";
 
@@ -77,13 +75,14 @@ else{
 sentiment="😐 Trung lập (Score: "+score+")";
 
 reply=
-"💬 Gợi ý phản hồi:<br>Cảm ơn bạn đã gửi phản hồi. Chúng tôi sẽ tiếp tục cải thiện dịch vụ.";
+"💬 Phản hồi:<br>Cảm ơn bạn đã gửi phản hồi. Chúng tôi sẽ tiếp tục cải thiện dịch vụ.";
 
 resultDiv.className="result neutral";
 
 }
 
-resultDiv.innerHTML=sentiment+"<br><br>"+reply;
+resultDiv.innerHTML=
+sentiment+"<br><br>"+reply;
 
 }
 
