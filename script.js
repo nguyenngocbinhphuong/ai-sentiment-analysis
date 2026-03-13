@@ -1,58 +1,98 @@
-async function analyze(){
+function analyze(){
 
-let text=document.getElementById("textInput").value;
+let text=document.getElementById("textInput").value.toLowerCase();
 
 let resultDiv=document.getElementById("result");
 
+/* kiểm tra input */
+
 if(text.trim()===""){
 
-resultDiv.innerHTML="⚠️ Vui lòng nhập phản hồi";
+resultDiv.innerHTML="⚠️ Vui lòng nhập phản hồi khách hàng";
 resultDiv.className="result neutral";
 return;
 
 }
 
+/* hiển thị đang phân tích */
+
 resultDiv.innerHTML="⏳ Đang phân tích...";
 
-let apiKey="YOUR_API_KEY";
+/* danh sách từ tích cực */
 
-let response=await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="+apiKey,
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-contents:[
-{
-parts:[
-{
-text:"Phân tích cảm xúc phản hồi sau và chỉ trả lời: Tích cực, Tiêu cực hoặc Trung lập: "+text
+let positiveWords=[
+"tốt","tuyệt","hài lòng","ưng","ok",
+"đẹp","nhanh","chất lượng","thích",
+"tuyệt vời","ổn","đỉnh","xuất sắc"
+];
+
+/* danh sách từ tiêu cực */
+
+let negativeWords=[
+"tệ","kém","chậm","bực",
+"thất vọng","xấu","dở",
+"không hài lòng","lỗi","hỏng"
+];
+
+let score=0;
+
+/* kiểm tra từ tích cực */
+
+positiveWords.forEach(word=>{
+if(text.includes(word)){
+score++;
 }
-]
+});
+
+/* kiểm tra từ tiêu cực */
+
+negativeWords.forEach(word=>{
+if(text.includes(word)){
+score--;
 }
-]
-})
-}
-);
+});
 
-let data=await response.json();
+/* hiển thị kết quả */
 
-let result=data.candidates[0].content.parts[0].text;
+if(score>0){
 
-if(result.includes("Tích cực")){
+resultDiv.innerHTML="😊 Tích cực (Score: "+score+")";
 resultDiv.className="result positive";
+
 }
 
-else if(result.includes("Tiêu cực")){
+else if(score<0){
+
+resultDiv.innerHTML="😡 Tiêu cực (Score: "+score+")";
 resultDiv.className="result negative";
+
 }
 
 else{
+
+resultDiv.innerHTML="😐 Trung lập (Score: "+score+")";
 resultDiv.className="result neutral";
+
 }
 
-resultDiv.innerHTML=result;
+}
+
+
+/* copy kết quả */
+
+function copyResult(){
+
+let result=document.getElementById("result").innerText;
+
+if(result===""){
+
+alert("Chưa có kết quả để copy");
+return;
+
+}
+
+navigator.clipboard.writeText(result);
+
+alert("Đã copy kết quả");
 
 }
