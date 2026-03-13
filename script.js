@@ -19,107 +19,81 @@ return;
 
 }
 
-/* danh sách từ tích cực */
-
 let positiveWords=[
-
-"tốt",
-"tuyệt",
-"hài lòng",
-"ưng",
-"ok",
-"đẹp",
-"nhanh",
-"chất lượng",
-"thích",
-"tuyệt vời",
-"ổn",
-"đỉnh"
-
+"tốt","tuyệt","hài lòng","ưng","ok",
+"đẹp","nhanh","chất lượng","thích",
+"tuyệt vời","ổn","đỉnh"
 ];
 
-/* danh sách từ tiêu cực */
-
 let negativeWords=[
-
-"tệ",
-"kém",
-"chậm",
-"bực",
-"thất vọng",
-"xấu",
-"dở",
-"lỗi",
-"hỏng"
-
+"tệ","kém","chậm","bực",
+"thất vọng","xấu","dở",
+"lỗi","hỏng"
 ];
 
 let score=0;
 
-/* kiểm tra từ tích cực */
-
 positiveWords.forEach(word=>{
-
 if(text.includes(word)){
-
 score++;
-
 }
-
 });
-
-/* kiểm tra từ tiêu cực */
 
 negativeWords.forEach(word=>{
-
 if(text.includes(word)){
-
 score--;
-
 }
-
 });
 
-/* hiển thị kết quả */
+/* kết quả */
+
+let sentiment="";
+let reply="";
 
 if(score>0){
 
-resultDiv.innerHTML=
-"😊 Tích cực (Score: "+score+")";
+sentiment="😊 Tích cực (Score: "+score+")";
 
-resultDiv.className=
-"result positive";
+reply=
+"💬 Gợi ý phản hồi:<br>Cảm ơn bạn đã tin tưởng và sử dụng sản phẩm của chúng tôi!";
+
+resultDiv.className="result positive";
 
 }
 
 else if(score<0){
 
-resultDiv.innerHTML=
-"😡 Tiêu cực (Score: "+score+")";
+sentiment="😡 Tiêu cực (Score: "+score+")";
 
-resultDiv.className=
-"result negative";
+reply=
+"💬 Gợi ý phản hồi:<br>Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt. Chúng tôi sẽ kiểm tra và cải thiện dịch vụ.";
+
+resultDiv.className="result negative";
 
 }
 
 else{
 
-resultDiv.innerHTML=
-"😐 Trung lập (Score: "+score+")";
+sentiment="😐 Trung lập (Score: "+score+")";
 
-resultDiv.className=
-"result neutral";
+reply=
+"💬 Gợi ý phản hồi:<br>Cảm ơn bạn đã gửi phản hồi. Chúng tôi sẽ tiếp tục cải thiện dịch vụ.";
+
+resultDiv.className="result neutral";
 
 }
 
+resultDiv.innerHTML=sentiment+"<br><br>"+reply;
+
 }
+
 
 /* copy kết quả */
 
 function copyResult(){
 
-let result=
-document.getElementById("result")
+let result=document
+.getElementById("result")
 .innerText;
 
 if(result===""){
@@ -130,8 +104,7 @@ return;
 
 }
 
-navigator.clipboard
-.writeText(result);
+navigator.clipboard.writeText(result);
 
 alert("Đã copy kết quả");
 
