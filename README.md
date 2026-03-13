@@ -1,32 +1,22 @@
 # AI Sentiment Analysis Web App
 
 ## Mô tả
-Ứng dụng web phân tích cảm xúc phản hồi khách hàng sử dụng HTML, CSS và JavaScript.
+Ứng dụng web sử dụng AI đơn giản để phân tích cảm xúc phản hồi khách hàng.
 
 ## Chức năng
-- Nhập phản hồi khách hàng
-- Phân tích cảm xúc
-- Hiển thị kết quả: Tích cực / Tiêu cực / Trung lập
+- Phân tích cảm xúc phản hồi
+- Kết quả: Tích cực / Tiêu cực / Trung lập
+- Giao diện web đơn giản
 
-## Công nghệ
-HTML
-CSS
-JavaScript
+## Công nghệ sử dụng
+- HTML
+- CSS
+- JavaScript
+- Docker
+- Vercel
 
-## Chạy local
+## Demo Website
+https://ai-sentiment-analysis-nine.vercel.app
 
-Mở file index.html bằng trình duyệt.
-
-## Docker
-
-Build image:
-
-docker build -t ai-sentiment .
-
-Run container:
-
-docker run -p 8080:80 ai-sentiment
-
-Sau đó truy cập:
-
-http://localhost:8080
+## GitHub Repository
+https://github.com/nguyenngocbinhphuong/ai-sentiment-analysis
