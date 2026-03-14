@@ -19,7 +19,7 @@ margin:0;
 .container{
 background:white;
 padding:30px;
-width:600px;
+width:650px;
 border-radius:12px;
 box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
@@ -56,17 +56,17 @@ background:#1e272e;
 
 .result{
 margin-top:20px;
-padding:15px;
+padding:20px;
 border-radius:8px;
 background:#f1f2f6;
 }
 
 .insight{
 background:#e8f4ff;
-border-left:4px solid #3498db;
+border-left:5px solid #3498db;
 padding:15px;
-margin-top:15px;
 border-radius:6px;
+line-height:1.7;
 }
 
 </style>
@@ -93,99 +93,128 @@ function analyze(){
 let text=document.getElementById("textInput").value.toLowerCase();
 let result=document.getElementById("result");
 
-if(text.trim()===""){
+if(text.trim()==""){
 alert("Vui lòng nhập phản hồi khách hàng");
 return;
 }
 
-/* từ khóa */
+/* TỪ KHÓA TÍCH CỰC */
 
 let positive=[
-"tốt","tuyệt","hài lòng","ưng","ok","đẹp","nhanh","chất lượng","thích",
-"ổn","rất tốt","quá tốt","tuyệt vời","xuất sắc","hoàn hảo"
+"tốt","rất tốt","tuyệt","tuyệt vời","ổn","ok",
+"hài lòng","rất hài lòng","ưng","ưng ý",
+"đẹp","rất đẹp","chất lượng","xịn","xịn sò",
+"đỉnh","đỉnh cao","cao cấp","tuyệt hảo",
+"nhanh","giao nhanh","ship nhanh",
+"giá tốt","giá rẻ","hợp lý","đáng tiền",
+"nhân viên tốt","dịch vụ tốt","hỗ trợ nhanh",
+"thích","rất thích","yêu thích",
+"xuất sắc","hoàn hảo","tuyệt phẩm"
 ];
+
+/* TỪ KHÓA TIÊU CỰC */
 
 let negative=[
-"kém","tệ","chậm","bực","thất vọng","xấu","dở","lâu","tệ hại",
-"không tốt","không ổn","rất chậm","quá lâu","không hài lòng"
+"kém","rất kém","tệ","tệ hại","tệ quá",
+"không tốt","không ổn","không hài lòng",
+"xấu","rất xấu","dở","chất lượng kém",
+"chậm","rất chậm","giao chậm","ship chậm",
+"lâu","rất lâu",
+"đắt","rất đắt","quá đắt","giá cao",
+"bực","bực mình","khó chịu",
+"thất vọng","rất thất vọng",
+"dịch vụ kém","nhân viên tệ",
+"không thích"
 ];
 
-/* tính điểm cảm xúc */
+/* ĐẾM TỪ */
 
-let score=0;
+let pos=0;
+let neg=0;
 
 positive.forEach(w=>{
-if(text.includes(w)) score++;
+if(text.includes(w)) pos++;
 });
 
 negative.forEach(w=>{
-if(text.includes(w)) score--;
+if(text.includes(w)) neg++;
 });
 
-/* xác định cảm xúc */
+/* CẢM XÚC */
 
 let sentiment="Trung lập 😐";
 
-if(score>1) sentiment="Tích cực 😊";
-if(score< -1) sentiment="Tiêu cực 😡";
-if(score===1 || score===-1) sentiment="Vừa hài lòng vừa chưa hài lòng 🙂";
+if(pos>neg) sentiment="Tích cực 😊";
+if(neg>pos) sentiment="Tiêu cực 😡";
+if(pos>0 && neg>0) sentiment="Vừa khen vừa chê 🙂";
 
-/* nhận diện chủ đề */
+/* ĐIỂM HÀI LÒNG */
 
-let topics=[];
+let score=5;
+score+=pos*2;
+score-=neg*2;
 
-if(text.includes("giao")) topics.push("Giao hàng");
-if(text.includes("ship")) topics.push("Giao hàng");
+if(score>10) score=10;
+if(score<1) score=1;
 
-if(text.includes("sản phẩm") || text.includes("chất lượng"))
-topics.push("Chất lượng sản phẩm");
+/* PHÂN TÍCH TIÊU CHÍ */
 
-if(text.includes("giá") || text.includes("đắt") || text.includes("rẻ"))
-topics.push("Giá cả");
+let product=5;
+let delivery=5;
+let price=5;
+let service=5;
 
-if(text.includes("dịch vụ") || text.includes("nhân viên"))
-topics.push("Dịch vụ khách hàng");
+if(text.includes("sản phẩm")||text.includes("chất lượng")){
+product+=pos-neg;
+}
 
-if(text.includes("đóng gói") || text.includes("bao bì"))
-topics.push("Đóng gói");
+if(text.includes("giao")||text.includes("ship")){
+delivery+=pos-neg;
+}
 
-if(topics.length===0) topics.push("Phản hồi chung");
+if(text.includes("giá")||text.includes("đắt")||text.includes("rẻ")){
+price+=pos-neg;
+}
 
-/* phản hồi CSKH đa dạng */
+if(text.includes("nhân viên")||text.includes("dịch vụ")){
+service+=pos-neg;
+}
 
-let positiveReplies=[
+function clamp(n){
+if(n>10) return 10;
+if(n<1) return 1;
+return n;
+}
 
-"Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi sản phẩm mang lại trải nghiệm tốt cho bạn.",
-"Chúng tôi rất cảm kích khi nhận được phản hồi hài lòng từ bạn. Hy vọng tiếp tục được phục vụ bạn.",
-"Rất vui khi bạn có trải nghiệm tốt với sản phẩm. Cảm ơn bạn đã ủng hộ chúng tôi."
+product=clamp(product);
+delivery=clamp(delivery);
+price=clamp(price);
+service=clamp(service);
 
+/* KHUYẾN NGHỊ */
+
+let recommend="Có thể";
+
+if(score>=8) recommend="Rất sẵn sàng 👍";
+if(score<=4) recommend="Không khuyến nghị 👎";
+
+/* PHẢN HỒI CSKH NGẪU NHIÊN */
+
+let positiveReply=[
+"Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi bạn hài lòng với sản phẩm.",
+"Chúng tôi rất trân trọng đánh giá của bạn và sẽ tiếp tục cải thiện dịch vụ.",
+"Rất vui khi sản phẩm đáp ứng được mong đợi của bạn. Cảm ơn bạn!"
 ];
 
-let negativeReplies=[
-
-"Chúng tôi xin lỗi vì trải nghiệm của bạn chưa được như mong đợi. Chúng tôi sẽ kiểm tra và cải thiện ngay.",
-"Cảm ơn bạn đã góp ý. Chúng tôi rất tiếc vì sự bất tiện và sẽ cải thiện dịch vụ trong thời gian tới.",
-"Chúng tôi xin lỗi về trải nghiệm chưa tốt và sẽ cố gắng khắc phục để phục vụ bạn tốt hơn."
-
+let neutralReply=[
+"Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi sẽ cải thiện trải nghiệm trong thời gian tới.",
+"Phản hồi của bạn rất quan trọng với chúng tôi. Chúng tôi sẽ xem xét để nâng cao dịch vụ."
 ];
 
-let mixedReplies=[
-
-"Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi rất vui khi bạn hài lòng ở một số điểm và sẽ cải thiện những điểm chưa tốt.",
-"Chúng tôi trân trọng góp ý của bạn. Chúng tôi sẽ giữ vững những điểm tốt và khắc phục những điểm chưa hoàn thiện.",
-"Cảm ơn bạn đã phản hồi chi tiết. Điều này giúp chúng tôi nâng cao chất lượng dịch vụ."
-
+let negativeReply=[
+"Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt và sẽ kiểm tra lại vấn đề.",
+"Rất tiếc khi sản phẩm chưa đáp ứng kỳ vọng. Chúng tôi sẽ cải thiện ngay."
 ];
-
-let neutralReplies=[
-
-"Cảm ơn bạn đã chia sẻ ý kiến. Phản hồi của bạn giúp chúng tôi cải thiện dịch vụ.",
-"Chúng tôi ghi nhận phản hồi của bạn và sẽ tiếp tục hoàn thiện sản phẩm.",
-"Cảm ơn bạn đã dành thời gian góp ý cho chúng tôi."
-
-];
-
-/* chọn phản hồi random */
 
 function random(arr){
 return arr[Math.floor(Math.random()*arr.length)];
@@ -193,39 +222,49 @@ return arr[Math.floor(Math.random()*arr.length)];
 
 let reply="";
 
-if(sentiment.includes("Tích cực")){
-reply=random(positiveReplies);
-}
+if(score>=8) reply=random(positiveReply);
+else if(score>=5) reply=random(neutralReply);
+else reply=random(negativeReply);
 
-else if(sentiment.includes("Tiêu cực")){
-reply=random(negativeReplies);
-}
-
-else if(sentiment.includes("Vừa")){
-reply=random(mixedReplies);
-}
-
-else{
-reply=random(neutralReplies);
-}
-
-/* hiển thị */
+/* HIỂN THỊ */
 
 result.innerHTML=`
 
-<h3>📊 Kết quả phân tích AI</h3>
+<h3>📊 Báo cáo phân tích AI</h3>
 
 <div class="insight">
 
-<b>Cảm xúc khách hàng:</b> ${sentiment}
+<b>😊 Cảm xúc khách hàng:</b> ${sentiment}
 
 <br><br>
 
-<b>Chủ đề phản hồi:</b> ${topics.join(", ")}
+<b>⭐ Điểm hài lòng:</b> ${score}/10
 
 <br><br>
 
-<b>Phản hồi CSKH:</b><br><br>
+<b>📦 Chất lượng sản phẩm:</b> ${product}/10
+
+<br>
+
+<b>🚚 Giao hàng:</b> ${delivery}/10
+
+<br>
+
+<b>💰 Giá cả:</b> ${price}/10
+
+<br>
+
+<b>👨‍💼 Dịch vụ khách hàng:</b> ${service}/10
+
+<br><br>
+
+<b>📢 Mức độ khuyến nghị:</b> ${recommend}
+
+<br><br>
+
+<b>🤖 Phản hồi CSKH:</b>
+
+<br><br>
 
 ${reply}
 
