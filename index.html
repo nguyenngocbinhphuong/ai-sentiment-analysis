@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>AI Phân tích phản hồi khách hàng</title>
+<title>AI Customer Feedback Analyzer</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -22,10 +21,12 @@ margin:0;
 .container{
 background:white;
 padding:30px;
-width:850px;
+width:800px;
 border-radius:12px;
 box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
+
+h2{text-align:center;}
 
 textarea{
 width:100%;
@@ -33,6 +34,7 @@ height:120px;
 padding:10px;
 border-radius:6px;
 border:1px solid #ccc;
+font-size:16px;
 }
 
 button{
@@ -47,15 +49,48 @@ font-size:16px;
 cursor:pointer;
 }
 
+button:hover{
+background:#1e272e;
+}
+
 .result{
 margin-top:20px;
 padding:20px;
-background:#f1f2f6;
 border-radius:8px;
+background:#f1f2f6;
+}
+
+.insight{
+background:#e8f4ff;
+border-left:5px solid #3498db;
+padding:15px;
+border-radius:6px;
+line-height:1.7;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(2,1fr);
+gap:10px;
+margin-top:10px;
+}
+
+.card{
+background:#f9f9f9;
+padding:10px;
+border-radius:6px;
+}
+
+.history{
+margin-top:20px;
+background:#fafafa;
+padding:10px;
+border-radius:6px;
+max-height:150px;
+overflow:auto;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -64,25 +99,31 @@ border-radius:8px;
 
 <h2>🤖 AI Phân tích phản hồi khách hàng</h2>
 
-<textarea id="textInput" placeholder="Nhập phản hồi khách hàng"></textarea>
+<textarea id="textInput" placeholder="Nhập phản hồi khách hàng..."></textarea>
 
 <button onclick="analyze()">Phân tích AI</button>
 
 <div class="result" id="result"></div>
 
-<h3>📊 Thống kê cảm xúc</h3>
-
 <canvas id="chart"></canvas>
+
+<div class="history" id="history">
+<b>📜 Lịch sử phản hồi:</b>
+</div>
 
 </div>
 
 <script>
 
-const API_KEY="AIzaSyAojNeQs-zG5oby3Xjnu6-T_nWQXOxWFt0";
+/* thống kê */
 
-let positive=0;
-let negative=0;
-let neutral=0;
+let posCount=0;
+let negCount=0;
+let neuCount=0;
+
+let scores=[];
+
+/* chart */
 
 let chart=new Chart(
 document.getElementById("chart"),
@@ -97,54 +138,195 @@ data:[0,0,0]
 }
 });
 
-let response = await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
-{
-method: "POST",
-headers: {
-"Content-Type": "application/json"
-},
-body: JSON.stringify({
-contents: [{
-parts: [{
-text: prompt
-}]
-}]
-})
+/* từ khóa */
+
+let positive=[
+"tốt","tuyệt","ok","ổn","hài lòng",
+"đẹp","chất lượng","xịn","đỉnh",
+"nhanh","giao nhanh","ship nhanh",
+"giá tốt","rẻ","hợp lý","đáng tiền",
+"dịch vụ tốt","nhân viên tốt",
+"thích","yêu thích"
+];
+
+let negative=[
+"kém","tệ","xấu","dở",
+"chậm","ship chậm","giao chậm",
+"lâu","rất lâu",
+"đắt","giá cao",
+"bực","khó chịu",
+"thất vọng","không hài lòng"
+];
+
+function analyze(){
+
+let text=document.getElementById("textInput").value.toLowerCase();
+let result=document.getElementById("result");
+let history=document.getElementById("history");
+
+if(text==""){
+alert("Vui lòng nhập phản hồi");
+return;
 }
-);
 
-let data = await response.json();
+let pos=0;
+let neg=0;
 
-let result = data.candidates[0].content.parts[0].text;
+positive.forEach(w=>{
+if(text.includes(w)) pos++;
+});
 
-document.getElementById("result").innerText = result;
+negative.forEach(w=>{
+if(text.includes(w)) neg++;
+});
 
-if(!data.candidates){
-throw new Error("AI không trả kết quả");
+/* sentiment */
+
+let sentiment="Trung lập 😐";
+
+if(pos>neg) sentiment="Tích cực 😊";
+if(neg>pos) sentiment="Tiêu cực 😡";
+if(pos>0 && neg>0) sentiment="Vừa khen vừa chê 🙂";
+
+/* score */
+
+let score=5+(pos*2)-(neg*2);
+
+if(score>10) score=10;
+if(score<1) score=1;
+
+scores.push(score);
+
+/* tiêu chí */
+
+let product=5;
+let delivery=5;
+let price=5;
+let service=5;
+let experience=5;
+
+if(text.includes("sản phẩm")||text.includes("chất lượng"))
+product+=pos-neg;
+
+if(text.includes("giao")||text.includes("ship"))
+delivery+=pos-neg;
+
+if(text.includes("giá")||text.includes("đắt")||text.includes("rẻ"))
+price+=pos-neg;
+
+if(text.includes("nhân viên")||text.includes("dịch vụ"))
+service+=pos-neg;
+
+experience=score;
+
+/* clamp */
+
+function clamp(n){
+if(n>10) return 10;
+if(n<1) return 1;
+return n;
 }
 
-let ai = data.candidates[0].content.parts[0].text;
+product=clamp(product);
+delivery=clamp(delivery);
+price=clamp(price);
+service=clamp(service);
 
-let data=await response.json();
+/* thống kê */
 
-let ai=data.candidates[0].content.parts[0].text;
+if(sentiment.includes("Tích cực")) posCount++;
+else if(sentiment.includes("Tiêu cực")) negCount++;
+else neuCount++;
 
-result.innerHTML="<pre>"+ai+"</pre>";
-
-if(ai.includes("Tích cực")) positive++;
-else if(ai.includes("Tiêu cực")) negative++;
-else neutral++;
-
-chart.data.datasets[0].data=[positive,negative,neutral];
+chart.data.datasets[0].data=[
+posCount,
+negCount,
+neuCount
+];
 
 chart.update();
 
-}catch{
+/* điểm trung bình */
 
-result.innerHTML="❌ Không kết nối được AI";
+let avgScore=(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1);
 
+/* phản hồi */
+
+let repliesPositive=[
+"Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi bạn hài lòng.",
+"Chúng tôi rất trân trọng đánh giá của bạn.",
+"Rất vui khi sản phẩm mang lại trải nghiệm tốt."
+];
+
+let repliesNegative=[
+"Chúng tôi xin lỗi vì trải nghiệm chưa tốt.",
+"Rất tiếc vì sự bất tiện bạn gặp phải.",
+"Chúng tôi sẽ cải thiện dịch vụ trong thời gian tới."
+];
+
+let repliesNeutral=[
+"Cảm ơn bạn đã chia sẻ phản hồi.",
+"Chúng tôi ghi nhận ý kiến của bạn.",
+"Phản hồi của bạn giúp chúng tôi cải thiện."
+];
+
+function random(arr){
+return arr[Math.floor(Math.random()*arr.length)];
 }
+
+let reply="";
+
+if(score>=8) reply=random(repliesPositive);
+else if(score<=4) reply=random(repliesNegative);
+else reply=random(repliesNeutral);
+
+/* hiển thị */
+
+result.innerHTML=`
+
+<h3>📊 Báo cáo AI</h3>
+
+<div class="insight">
+
+<b>😊 Cảm xúc:</b> ${sentiment}
+
+<br><br>
+
+<b>⭐ Điểm hài lòng:</b> ${score}/10
+
+<br><br>
+
+<div class="grid">
+
+<div class="card">📦 Sản phẩm: ${product}/10</div>
+
+<div class="card">🚚 Giao hàng: ${delivery}/10</div>
+
+<div class="card">💰 Giá cả: ${price}/10</div>
+
+<div class="card">👨‍💼 Dịch vụ: ${service}/10</div>
+
+<div class="card">🎯 Trải nghiệm: ${experience}/10</div>
+
+<div class="card">📊 Điểm trung bình: ${avgScore}</div>
+
+</div>
+
+<br>
+
+<b>🤖 Phản hồi CSKH:</b>
+
+<br><br>
+
+${reply}
+
+</div>
+
+`;
+
+/* lịch sử */
+
+history.innerHTML+=`<br>• ${text} → ${sentiment} (${score}/10)`;
 
 }
 
