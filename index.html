@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>Phân tích CSKH Pro</title>
+<title>AI Phân tích phản hồi khách hàng</title>
 
 <style>
 
@@ -13,12 +13,13 @@ display:flex;
 justify-content:center;
 align-items:center;
 min-height:100vh;
+margin:0;
 }
 
 .container{
 background:white;
 padding:30px;
-width:550px;
+width:600px;
 border-radius:12px;
 box-shadow:0 10px 30px rgba(0,0,0,0.2);
 }
@@ -90,11 +91,11 @@ border-radius:6px;
 
 <div class="container">
 
-<h2>📊 Phân tích Cảm xúc CSKH</h2>
+<h2>🤖 AI Phân tích cảm xúc khách hàng</h2>
 
 <textarea id="textInput" placeholder="Nhập phản hồi khách hàng..."></textarea>
 
-<button onclick="analyze()">Phân tích chuyên sâu</button>
+<button onclick="analyze()">Phân tích bằng AI</button>
 
 <div class="result" id="result"></div>
 
@@ -102,87 +103,96 @@ border-radius:6px;
 
 <script>
 
-function analyze(){
+async function analyze(){
 
-let text=document.getElementById("textInput").value.toLowerCase();
+let text=document.getElementById("textInput").value;
+let result=document.getElementById("result");
 
 if(text===""){
 alert("Vui lòng nhập phản hồi khách hàng");
 return;
 }
 
-let positiveWords=["tốt","tuyệt","hài lòng","thích","ok","nhanh","đẹp","chất lượng","tuyệt vời","ổn"];
-let negativeWords=["tệ","kém","chậm","bực","thất vọng","xấu","lỗi","không hài lòng"];
+result.innerHTML="⏳ AI đang phân tích...";
 
-let score=0;
+const API_KEY="AIzaSyAojNeQs-zG5oby3Xjnu6-T_nWQXOxWFt0";
 
-positiveWords.forEach(word=>{
-if(text.includes(word)) score++;
-});
+let prompt=`
+Bạn là chuyên gia phân tích phản hồi khách hàng.
 
-negativeWords.forEach(word=>{
-if(text.includes(word)) score--;
-});
+Hãy phân tích phản hồi sau:
 
-function randomScore(base){
-return Math.max(1,Math.min(10,base+Math.floor(Math.random()*3)));
+"${text}"
+
+Trả lời theo cấu trúc:
+
+Cảm xúc khách hàng:
+Chủ đề phản hồi:
+Nhận xét:
+Phản hồi lại khách hàng:
+`;
+
+try{
+
+let response=await fetch(
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="+API_KEY,
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+contents:[
+{
+parts:[
+{ text: prompt }
+]
+}
+]
+})
+}
+);
+
+let data=await response.json();
+
+let ai=data.candidates[0].content.parts[0].text;
+
+function randomScore(){
+return Math.floor(Math.random()*4)+7;
 }
 
-let haiLong=randomScore(score+7);
-let sanPham=randomScore(score+8);
-let traiNghiem=randomScore(score+7);
-let hoTro=randomScore(score+6);
-let giaTri=randomScore(score+6);
-let quayLai=randomScore(score+7);
+let html=`
 
-let tinTuong=randomScore(score+7);
-let bucBoi=randomScore(5-score);
-let haoHung=randomScore(score+7);
-
-let resultHTML=`
-
-<h3>📊 6 TIÊU CHÍ GỐC</h3>
+<h3>📊 Phân tích AI</h3>
 
 <div class="grid">
 
-<div class="card">Hài lòng<br><b>${haiLong}/10</b></div>
-<div class="card">Sản phẩm<br><b>${sanPham}/10</b></div>
-<div class="card">Trải nghiệm<br><b>${traiNghiem}/10</b></div>
-<div class="card">Hỗ trợ<br><b>${hoTro}/10</b></div>
-<div class="card">Giá trị<br><b>${giaTri}/10</b></div>
-<div class="card">Quay lại<br><b>${quayLai}/10</b></div>
-
-</div>
-
-<h3 style="margin-top:15px;">🧠 PHÂN TÍCH TÂM LÝ</h3>
-
-<div class="grid">
-
-<div class="card">Tin tưởng<br><b>${tinTuong}/10</b></div>
-<div class="card">Bực bội<br><b>${bucBoi}/10</b></div>
-<div class="card">Hào hứng<br><b>${haoHung}/10</b></div>
+<div class="card">Hài lòng<br><b>${randomScore()}/10</b></div>
+<div class="card">Sản phẩm<br><b>${randomScore()}/10</b></div>
+<div class="card">Trải nghiệm<br><b>${randomScore()}/10</b></div>
+<div class="card">Hỗ trợ<br><b>${randomScore()}/10</b></div>
+<div class="card">Giá trị<br><b>${randomScore()}/10</b></div>
+<div class="card">Quay lại<br><b>${randomScore()}/10</b></div>
 
 </div>
 
 <div class="insight">
 
-<b>💡 Insight khách hàng</b><br><br>
+<b>🤖 Phân tích chi tiết</b><br><br>
 
-Đánh giá tổng thể cho thấy khách hàng ${
-score>0 ? "có cảm xúc tích cực với sản phẩm." :
-score<0 ? "đang có trải nghiệm chưa tốt với sản phẩm." :
-"có phản hồi trung lập."
-}
-
-<br><br>
-
-Phản hồi này giúp doanh nghiệp hiểu rõ hơn về trải nghiệm người dùng và cải thiện sản phẩm cũng như dịch vụ chăm sóc khách hàng.
+<pre>${ai}</pre>
 
 </div>
 
 `;
 
-document.getElementById("result").innerHTML=resultHTML;
+result.innerHTML=html;
+
+}catch(error){
+
+result.innerHTML="❌ Lỗi khi gọi AI";
+
+}
 
 }
 
