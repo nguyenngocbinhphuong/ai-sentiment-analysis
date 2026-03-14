@@ -97,43 +97,6 @@ data:[0,0,0]
 }
 });
 
-async function analyze(){
-
-let text=document.getElementById("textInput").value;
-
-let result=document.getElementById("result");
-
-if(text===""){
-alert("Nhập phản hồi khách hàng");
-return;
-}
-
-result.innerHTML="AI đang phân tích...";
-
-let prompt=`
-Bạn là chuyên gia phân tích phản hồi khách hàng.
-
-Phân tích phản hồi sau:
-
-"${text}"
-
-Trả lời theo cấu trúc:
-
-Cảm xúc: (Tích cực / Trung lập / Tiêu cực)
-
-Điểm hài lòng: (1-10)
-
-Phân tích:
-- Chất lượng
-- Giá cả
-- Trải nghiệm
-- Dịch vụ
-
-Phản hồi CSKH chuyên nghiệp
-`;
-
-try{
-
 let response = await fetch(
 "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
 {
@@ -152,6 +115,10 @@ text: prompt
 );
 
 let data = await response.json();
+
+let result = data.candidates[0].content.parts[0].text;
+
+document.getElementById("result").innerText = result;
 
 if(!data.candidates){
 throw new Error("AI không trả kết quả");
