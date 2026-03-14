@@ -61,21 +61,6 @@ border-radius:8px;
 background:#f1f2f6;
 }
 
-.grid{
-display:grid;
-grid-template-columns:repeat(3,1fr);
-gap:10px;
-margin-top:10px;
-}
-
-.card{
-background:#f5f6fa;
-padding:10px;
-border-radius:8px;
-text-align:center;
-font-size:14px;
-}
-
 .insight{
 background:#e8f4ff;
 border-left:4px solid #3498db;
@@ -115,74 +100,102 @@ return;
 
 result.innerHTML="⏳ AI đang phân tích...";
 
-/* API KEY */
-
-const API_KEY="AIzaSyAojNeQs-zG5oby3Xjnu6-T_nWQXOxWFt0";
-
-/* prompt */
-
-let prompt=`
-Bạn là chuyên gia phân tích phản hồi khách hàng.
-
-Hãy phân tích phản hồi sau:
-
-"${text}"
-
-Trả lời gồm:
-
-1. Cảm xúc khách hàng
-2. Chủ đề phản hồi
-3. Nhận xét
-4. Phản hồi lại khách hàng như nhân viên CSKH
-`;
+const API_KEY="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";
 
 try{
 
-let response = await fetch(
-"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key="+API_KEY,
+let response=await fetch(
+"https://api-inference.huggingface.co/models/cardiffnlp/twitter-roberta-base-sentiment",
 {
 method:"POST",
 headers:{
+"Authorization":"Bearer "+API_KEY,
 "Content-Type":"application/json"
 },
 body:JSON.stringify({
-contents:[
-{
-parts:[
-{ text: prompt }
-]
-}
-]
+inputs:text
 })
 }
 );
 
-let data = await response.json();
+let data=await response.json();
 
 console.log(data);
 
-/* lấy text từ AI */
+/* nếu model đang load */
 
-let ai=data.candidates[0].content.parts[0].text;
+if(data.error){
+
+result.innerHTML="⏳ AI đang khởi động, hãy bấm lại sau vài giây...";
+return;
+
+}
+
+/* lấy label */
+
+let label=data[0][0].label;
+
+let sentiment="Trung lập 😐";
+
+if(label==="LABEL_2"){
+sentiment="Tích cực 😊";
+}
+
+if(label==="LABEL_0"){
+sentiment="Tiêu cực 😡";
+}
+
+/* phản hồi khách hàng */
+
+let reply="";
+
+if(sentiment.includes("Tích cực")){
+
+reply="Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi bạn hài lòng với sản phẩm và dịch vụ.";
+
+}
+
+else if(sentiment.includes("Tiêu cực")){
+
+reply="Chúng tôi xin lỗi vì trải nghiệm chưa tốt. Chúng tôi sẽ kiểm tra và cải thiện dịch vụ trong thời gian tới.";
+
+}
+
+else{
+
+reply="Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi sẽ tiếp tục cải thiện sản phẩm.";
+
+}
 
 result.innerHTML=`
 
 <h3>📊 Kết quả phân tích AI</h3>
 
 <div class="insight">
-<pre>${ai}</pre>
+
+<b>Cảm xúc khách hàng:</b> ${sentiment}
+
+<br><br>
+
+<b>Phản hồi CSKH:</b><br>
+
+${reply}
+
 </div>
 
 `;
 
-}catch(error){
+}
 
-result.innerHTML="❌ Lỗi khi gọi AI: "+error;
+catch(error){
+
+result.innerHTML="❌ Không kết nối được AI";
 
 }
 
 }
 
 </script>
+
 </body>
 </html>
