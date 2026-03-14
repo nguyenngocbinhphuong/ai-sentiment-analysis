@@ -134,24 +134,30 @@ Phản hồi CSKH chuyên nghiệp
 
 try{
 
-let response=await fetch(
-"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key="+API_KEY,
+let response = await fetch(
+"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + API_KEY,
 {
-method:"POST",
-headers:{
-"Content-Type":"application/json"
+method: "POST",
+headers: {
+"Content-Type": "application/json"
 },
-body:JSON.stringify({
-contents:[
-{
-parts:[
-{text:prompt}
-]
-}
-]
+body: JSON.stringify({
+contents: [{
+parts: [{
+text: prompt
+}]
+}]
 })
 }
 );
+
+let data = await response.json();
+
+if(!data.candidates){
+throw new Error("AI không trả kết quả");
+}
+
+let ai = data.candidates[0].content.parts[0].text;
 
 let data=await response.json();
 
