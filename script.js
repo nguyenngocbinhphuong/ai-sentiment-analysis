@@ -8,34 +8,74 @@ resultDiv.innerHTML="⚠️ Vui lòng nhập phản hồi khách hàng";
 return;
 }
 
-/* từ khóa cảm xúc */
+/* từ khóa */
 
 let positiveWords=[
-"tốt","tuyệt","tuyệt vời","hài lòng","thích",
-"ưng","ok","ổn","đẹp","nhanh","chất lượng"
+"tốt","tuyệt","tuyệt vời","hài lòng",
+"thích","ưng","ok","ổn","đẹp",
+"nhanh","chất lượng"
 ];
 
 let negativeWords=[
-"tệ","kém","chậm","bực","thất vọng",
-"xấu","dở","lỗi","hỏng","không hài lòng"
+"tệ","kém","chậm","bực",
+"thất vọng","xấu","dở",
+"lỗi","hỏng"
 ];
 
-/* từ khóa chủ đề */
+/* phủ định */
 
-let productWords=["sản phẩm","chất lượng","đẹp","lỗi","hỏng"];
-let shippingWords=["giao","ship","vận chuyển","chậm","nhanh"];
-let serviceWords=["nhân viên","hỗ trợ","tư vấn","dịch vụ"];
+let negativePrefix=[
+"không",
+"chẳng",
+"chưa"
+];
 
-/* tính điểm cảm xúc */
+/* tính điểm */
 
 let score=0;
 
 positiveWords.forEach(word=>{
-if(text.includes(word)) score++;
+
+if(text.includes(word)){
+
+let neg=false;
+
+negativePrefix.forEach(prefix=>{
+if(text.includes(prefix+" "+word)){
+neg=true;
+}
+});
+
+if(neg){
+score--;
+}else{
+score++;
+}
+
+}
+
 });
 
 negativeWords.forEach(word=>{
-if(text.includes(word)) score--;
+
+if(text.includes(word)){
+
+let neg=false;
+
+negativePrefix.forEach(prefix=>{
+if(text.includes(prefix+" "+word)){
+neg=true;
+}
+});
+
+if(neg){
+score++;
+}else{
+score--;
+}
+
+}
+
 });
 
 /* xác định cảm xúc */
@@ -43,11 +83,11 @@ if(text.includes(word)) score--;
 let sentiment="";
 let emoji="";
 
-if(score>1){
+if(score>=2){
 sentiment="Tích cực";
 emoji="😊";
 }
-else if(score<0){
+else if(score<=-2){
 sentiment="Tiêu cực";
 emoji="😡";
 }
@@ -60,49 +100,52 @@ emoji="😐";
 
 let topic="dịch vụ";
 
-productWords.forEach(word=>{
-if(text.includes(word)) topic="sản phẩm";
-});
+if(text.includes("sản phẩm")||text.includes("chất lượng")){
+topic="sản phẩm";
+}
 
-shippingWords.forEach(word=>{
-if(text.includes(word)) topic="giao hàng";
-});
+if(text.includes("giao")||text.includes("ship")){
+topic="giao hàng";
+}
 
-serviceWords.forEach(word=>{
-if(text.includes(word)) topic="dịch vụ hỗ trợ";
-});
+if(text.includes("nhân viên")||text.includes("hỗ trợ")){
+topic="dịch vụ hỗ trợ";
+}
 
-/* tạo phản hồi CSKH */
+/* tạo phản hồi */
 
 let reply="";
 
 if(sentiment==="Tích cực"){
 
-reply="Cảm ơn bạn đã phản hồi tích cực về "+topic+
-". Chúng tôi rất vui khi sản phẩm/dịch vụ mang lại trải nghiệm tốt cho bạn.";
+reply=
+"Cảm ơn bạn đã phản hồi tích cực về "+topic+
+". Chúng tôi rất vui khi trải nghiệm của bạn tốt và hy vọng tiếp tục phục vụ bạn.";
 
 }
 
 else if(sentiment==="Tiêu cực"){
 
-reply="Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt liên quan đến "+topic+
-". Chúng tôi sẽ kiểm tra và cải thiện dịch vụ để phục vụ bạn tốt hơn.";
+reply=
+"Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt liên quan đến "+topic+
+". Chúng tôi sẽ kiểm tra lại và cải thiện dịch vụ trong thời gian sớm nhất.";
 
 }
 
 else{
 
-reply="Cảm ơn bạn đã chia sẻ phản hồi về "+topic+
-". Chúng tôi sẽ ghi nhận ý kiến để cải thiện sản phẩm và dịch vụ.";
+reply=
+"Cảm ơn bạn đã chia sẻ phản hồi về "+topic+
+". Ý kiến của bạn rất quan trọng để chúng tôi cải thiện sản phẩm và dịch vụ.";
 
 }
 
-/* hiển thị kết quả */
+/* hiển thị */
 
 resultDiv.innerHTML=
 
-"<h3>"+emoji+" Phân tích cảm xúc: "+sentiment+"</h3>"+
-"<b>Chủ đề phản hồi:</b> "+topic+
+"<h3>"+emoji+" Cảm xúc: "+sentiment+"</h3>"+
+"<b>Chủ đề:</b> "+topic+
 "<br><br>"+
 "<b>💬 Phản hồi CSKH:</b><br>"+reply;
 
