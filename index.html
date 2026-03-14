@@ -1,8 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="vi">
 <head>
 <meta charset="UTF-8">
 <title>AI Phân tích phản hồi khách hàng</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
 
@@ -19,14 +22,9 @@ margin:0;
 .container{
 background:white;
 padding:30px;
-width:650px;
+width:850px;
 border-radius:12px;
 box-shadow:0 10px 30px rgba(0,0,0,0.2);
-}
-
-h2{
-text-align:center;
-margin-bottom:20px;
 }
 
 textarea{
@@ -35,7 +33,6 @@ height:120px;
 padding:10px;
 border-radius:6px;
 border:1px solid #ccc;
-font-size:16px;
 }
 
 button{
@@ -50,227 +47,131 @@ font-size:16px;
 cursor:pointer;
 }
 
-button:hover{
-background:#1e272e;
-}
-
 .result{
 margin-top:20px;
 padding:20px;
-border-radius:8px;
 background:#f1f2f6;
-}
-
-.insight{
-background:#e8f4ff;
-border-left:5px solid #3498db;
-padding:15px;
-border-radius:6px;
-line-height:1.7;
+border-radius:8px;
 }
 
 </style>
+
 </head>
 
 <body>
 
 <div class="container">
 
-<h2>🤖 AI Phân tích cảm xúc khách hàng</h2>
+<h2>🤖 AI Phân tích phản hồi khách hàng</h2>
 
-<textarea id="textInput" placeholder="Nhập phản hồi khách hàng..."></textarea>
+<textarea id="textInput" placeholder="Nhập phản hồi khách hàng"></textarea>
 
-<button onclick="analyze()">Phân tích bằng AI</button>
+<button onclick="analyze()">Phân tích AI</button>
 
 <div class="result" id="result"></div>
+
+<h3>📊 Thống kê cảm xúc</h3>
+
+<canvas id="chart"></canvas>
 
 </div>
 
 <script>
 
-function analyze(){
+const API_KEY="AIzaSyAojNeQs-zG5oby3Xjnu6-T_nWQXOxWFt0";
 
-let text=document.getElementById("textInput").value.toLowerCase();
+let positive=0;
+let negative=0;
+let neutral=0;
+
+let chart=new Chart(
+document.getElementById("chart"),
+{
+type:"bar",
+data:{
+labels:["Tích cực","Tiêu cực","Trung lập"],
+datasets:[{
+label:"Phản hồi khách hàng",
+data:[0,0,0]
+}]
+}
+});
+
+async function analyze(){
+
+let text=document.getElementById("textInput").value;
+
 let result=document.getElementById("result");
 
-if(text.trim()==""){
-alert("Vui lòng nhập phản hồi khách hàng");
+if(text===""){
+alert("Nhập phản hồi khách hàng");
 return;
 }
 
-/* TỪ KHÓA TÍCH CỰC */
+result.innerHTML="AI đang phân tích...";
 
-let positive=[
-"tốt","rất tốt","tuyệt","tuyệt vời","ổn","ok",
-"hài lòng","rất hài lòng","ưng","ưng ý",
-"đẹp","rất đẹp","chất lượng","xịn","xịn sò",
-"đỉnh","đỉnh cao","cao cấp","tuyệt hảo",
-"nhanh","giao nhanh","ship nhanh",
-"giá tốt","giá rẻ","hợp lý","đáng tiền",
-"nhân viên tốt","dịch vụ tốt","hỗ trợ nhanh",
-"thích","rất thích","yêu thích",
-"xuất sắc","hoàn hảo","tuyệt phẩm"
-];
+let prompt=`
+Bạn là chuyên gia phân tích phản hồi khách hàng.
 
-/* TỪ KHÓA TIÊU CỰC */
+Phân tích phản hồi sau:
 
-let negative=[
-"kém","rất kém","tệ","tệ hại","tệ quá",
-"không tốt","không ổn","không hài lòng",
-"xấu","rất xấu","dở","chất lượng kém",
-"chậm","rất chậm","giao chậm","ship chậm",
-"lâu","rất lâu",
-"đắt","rất đắt","quá đắt","giá cao",
-"bực","bực mình","khó chịu",
-"thất vọng","rất thất vọng",
-"dịch vụ kém","nhân viên tệ",
-"không thích"
-];
+"${text}"
 
-/* ĐẾM TỪ */
+Trả lời theo cấu trúc:
 
-let pos=0;
-let neg=0;
+Cảm xúc: (Tích cực / Trung lập / Tiêu cực)
 
-positive.forEach(w=>{
-if(text.includes(w)) pos++;
-});
+Điểm hài lòng: (1-10)
 
-negative.forEach(w=>{
-if(text.includes(w)) neg++;
-});
+Phân tích:
+- Chất lượng
+- Giá cả
+- Trải nghiệm
+- Dịch vụ
 
-/* CẢM XÚC */
-
-let sentiment="Trung lập 😐";
-
-if(pos>neg) sentiment="Tích cực 😊";
-if(neg>pos) sentiment="Tiêu cực 😡";
-if(pos>0 && neg>0) sentiment="Vừa khen vừa chê 🙂";
-
-/* ĐIỂM HÀI LÒNG */
-
-let score=5;
-score+=pos*2;
-score-=neg*2;
-
-if(score>10) score=10;
-if(score<1) score=1;
-
-/* PHÂN TÍCH TIÊU CHÍ */
-
-let product=5;
-let delivery=5;
-let price=5;
-let service=5;
-
-if(text.includes("sản phẩm")||text.includes("chất lượng")){
-product+=pos-neg;
-}
-
-if(text.includes("giao")||text.includes("ship")){
-delivery+=pos-neg;
-}
-
-if(text.includes("giá")||text.includes("đắt")||text.includes("rẻ")){
-price+=pos-neg;
-}
-
-if(text.includes("nhân viên")||text.includes("dịch vụ")){
-service+=pos-neg;
-}
-
-function clamp(n){
-if(n>10) return 10;
-if(n<1) return 1;
-return n;
-}
-
-product=clamp(product);
-delivery=clamp(delivery);
-price=clamp(price);
-service=clamp(service);
-
-/* KHUYẾN NGHỊ */
-
-let recommend="Có thể";
-
-if(score>=8) recommend="Rất sẵn sàng 👍";
-if(score<=4) recommend="Không khuyến nghị 👎";
-
-/* PHẢN HỒI CSKH NGẪU NHIÊN */
-
-let positiveReply=[
-"Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi bạn hài lòng với sản phẩm.",
-"Chúng tôi rất trân trọng đánh giá của bạn và sẽ tiếp tục cải thiện dịch vụ.",
-"Rất vui khi sản phẩm đáp ứng được mong đợi của bạn. Cảm ơn bạn!"
-];
-
-let neutralReply=[
-"Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi sẽ cải thiện trải nghiệm trong thời gian tới.",
-"Phản hồi của bạn rất quan trọng với chúng tôi. Chúng tôi sẽ xem xét để nâng cao dịch vụ."
-];
-
-let negativeReply=[
-"Chúng tôi rất xin lỗi vì trải nghiệm chưa tốt và sẽ kiểm tra lại vấn đề.",
-"Rất tiếc khi sản phẩm chưa đáp ứng kỳ vọng. Chúng tôi sẽ cải thiện ngay."
-];
-
-function random(arr){
-return arr[Math.floor(Math.random()*arr.length)];
-}
-
-let reply="";
-
-if(score>=8) reply=random(positiveReply);
-else if(score>=5) reply=random(neutralReply);
-else reply=random(negativeReply);
-
-/* HIỂN THỊ */
-
-result.innerHTML=`
-
-<h3>📊 Báo cáo phân tích AI</h3>
-
-<div class="insight">
-
-<b>😊 Cảm xúc khách hàng:</b> ${sentiment}
-
-<br><br>
-
-<b>⭐ Điểm hài lòng:</b> ${score}/10
-
-<br><br>
-
-<b>📦 Chất lượng sản phẩm:</b> ${product}/10
-
-<br>
-
-<b>🚚 Giao hàng:</b> ${delivery}/10
-
-<br>
-
-<b>💰 Giá cả:</b> ${price}/10
-
-<br>
-
-<b>👨‍💼 Dịch vụ khách hàng:</b> ${service}/10
-
-<br><br>
-
-<b>📢 Mức độ khuyến nghị:</b> ${recommend}
-
-<br><br>
-
-<b>🤖 Phản hồi CSKH:</b>
-
-<br><br>
-
-${reply}
-
-</div>
-
+Phản hồi CSKH chuyên nghiệp
 `;
+
+try{
+
+let response=await fetch(
+"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key="+API_KEY,
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+contents:[
+{
+parts:[
+{text:prompt}
+]
+}
+]
+})
+}
+);
+
+let data=await response.json();
+
+let ai=data.candidates[0].content.parts[0].text;
+
+result.innerHTML="<pre>"+ai+"</pre>";
+
+if(ai.includes("Tích cực")) positive++;
+else if(ai.includes("Tiêu cực")) negative++;
+else neutral++;
+
+chart.data.datasets[0].data=[positive,negative,neutral];
+
+chart.update();
+
+}catch{
+
+result.innerHTML="❌ Không kết nối được AI";
+
+}
 
 }
 
