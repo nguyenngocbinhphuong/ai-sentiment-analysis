@@ -115,7 +115,11 @@ return;
 
 result.innerHTML="⏳ AI đang phân tích...";
 
+/* API KEY */
+
 const API_KEY="AIzaSyAojNeQs-zG5oby3Xjnu6-T_nWQXOxWFt0";
+
+/* prompt */
 
 let prompt=`
 Bạn là chuyên gia phân tích phản hồi khách hàng.
@@ -124,18 +128,18 @@ Hãy phân tích phản hồi sau:
 
 "${text}"
 
-Trả lời theo cấu trúc:
+Trả lời gồm:
 
-Cảm xúc khách hàng:
-Chủ đề phản hồi:
-Nhận xét:
-Phản hồi lại khách hàng:
+1. Cảm xúc khách hàng
+2. Chủ đề phản hồi
+3. Nhận xét
+4. Phản hồi lại khách hàng như nhân viên CSKH
 `;
 
 try{
 
-let response=await fetch(
-"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key="+API_KEY,
+let response = await fetch(
+"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key="+API_KEY,
 {
 method:"POST",
 headers:{
@@ -153,50 +157,32 @@ parts:[
 }
 );
 
-let data=await response.json();
+let data = await response.json();
+
+console.log(data);
+
+/* lấy text từ AI */
 
 let ai=data.candidates[0].content.parts[0].text;
 
-function randomScore(){
-return Math.floor(Math.random()*4)+7;
-}
+result.innerHTML=`
 
-let html=`
-
-<h3>📊 Phân tích AI</h3>
-
-<div class="grid">
-
-<div class="card">Hài lòng<br><b>${randomScore()}/10</b></div>
-<div class="card">Sản phẩm<br><b>${randomScore()}/10</b></div>
-<div class="card">Trải nghiệm<br><b>${randomScore()}/10</b></div>
-<div class="card">Hỗ trợ<br><b>${randomScore()}/10</b></div>
-<div class="card">Giá trị<br><b>${randomScore()}/10</b></div>
-<div class="card">Quay lại<br><b>${randomScore()}/10</b></div>
-
-</div>
+<h3>📊 Kết quả phân tích AI</h3>
 
 <div class="insight">
-
-<b>🤖 Phân tích chi tiết</b><br><br>
-
 <pre>${ai}</pre>
-
 </div>
 
 `;
 
-result.innerHTML=html;
-
 }catch(error){
 
-result.innerHTML="❌ Lỗi khi gọi AI";
+result.innerHTML="❌ Lỗi khi gọi AI: "+error;
 
 }
 
 }
 
 </script>
-
 </body>
 </html>
