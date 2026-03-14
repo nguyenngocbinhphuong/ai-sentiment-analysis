@@ -1,48 +1,192 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
-
 <meta charset="UTF-8">
+<title>Phân tích CSKH Pro</title>
 
-<title>AI Phân Tích Cảm Xúc Khách Hàng</title>
+<style>
 
-<link rel="stylesheet" href="style.css">
+body{
+font-family:Arial;
+background:linear-gradient(135deg,#36a2d6,#2ec4b6);
+display:flex;
+justify-content:center;
+align-items:center;
+min-height:100vh;
+}
 
+.container{
+background:white;
+padding:30px;
+width:550px;
+border-radius:12px;
+box-shadow:0 10px 30px rgba(0,0,0,0.2);
+}
+
+h2{
+text-align:center;
+margin-bottom:20px;
+}
+
+textarea{
+width:100%;
+height:120px;
+padding:10px;
+border-radius:6px;
+border:1px solid #ccc;
+font-size:16px;
+}
+
+button{
+margin-top:15px;
+width:100%;
+padding:12px;
+border:none;
+background:#2f3640;
+color:white;
+border-radius:6px;
+font-size:16px;
+cursor:pointer;
+}
+
+button:hover{
+background:#1e272e;
+}
+
+.result{
+margin-top:20px;
+padding:15px;
+border-radius:8px;
+background:#f1f2f6;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(3,1fr);
+gap:10px;
+margin-top:10px;
+}
+
+.card{
+background:#f5f6fa;
+padding:10px;
+border-radius:8px;
+text-align:center;
+font-size:14px;
+}
+
+.insight{
+background:#e8f4ff;
+border-left:4px solid #3498db;
+padding:15px;
+margin-top:15px;
+border-radius:6px;
+}
+
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-<h1>🤖 AI Phân Tích Cảm Xúc Khách Hàng</h1>
+<h2>📊 Phân tích Cảm xúc CSKH</h2>
 
-<p class="subtitle">
-Nhập phản hồi khách hàng để phân tích cảm xúc
-</p>
+<textarea id="textInput" placeholder="Nhập phản hồi khách hàng..."></textarea>
 
-<textarea 
-id="textInput" 
-placeholder="Ví dụ: Sản phẩm rất tốt, giao hàng nhanh..."
-></textarea>
+<button onclick="analyze()">Phân tích chuyên sâu</button>
 
-<div class="buttons">
-
-<button onclick="analyze()">
-🔍 Phân tích cảm xúc
-</button>
-
-<button onclick="copyResult()">
-📋 Copy Result
-</button>
+<div class="result" id="result"></div>
 
 </div>
 
-<div id="result" class="result"></div>
+<script>
+
+function analyze(){
+
+let text=document.getElementById("textInput").value.toLowerCase();
+
+if(text===""){
+alert("Vui lòng nhập phản hồi khách hàng");
+return;
+}
+
+let positiveWords=["tốt","tuyệt","hài lòng","thích","ok","nhanh","đẹp","chất lượng","tuyệt vời","ổn"];
+let negativeWords=["tệ","kém","chậm","bực","thất vọng","xấu","lỗi","không hài lòng"];
+
+let score=0;
+
+positiveWords.forEach(word=>{
+if(text.includes(word)) score++;
+});
+
+negativeWords.forEach(word=>{
+if(text.includes(word)) score--;
+});
+
+function randomScore(base){
+return Math.max(1,Math.min(10,base+Math.floor(Math.random()*3)));
+}
+
+let haiLong=randomScore(score+7);
+let sanPham=randomScore(score+8);
+let traiNghiem=randomScore(score+7);
+let hoTro=randomScore(score+6);
+let giaTri=randomScore(score+6);
+let quayLai=randomScore(score+7);
+
+let tinTuong=randomScore(score+7);
+let bucBoi=randomScore(5-score);
+let haoHung=randomScore(score+7);
+
+let resultHTML=`
+
+<h3>📊 6 TIÊU CHÍ GỐC</h3>
+
+<div class="grid">
+
+<div class="card">Hài lòng<br><b>${haiLong}/10</b></div>
+<div class="card">Sản phẩm<br><b>${sanPham}/10</b></div>
+<div class="card">Trải nghiệm<br><b>${traiNghiem}/10</b></div>
+<div class="card">Hỗ trợ<br><b>${hoTro}/10</b></div>
+<div class="card">Giá trị<br><b>${giaTri}/10</b></div>
+<div class="card">Quay lại<br><b>${quayLai}/10</b></div>
 
 </div>
 
-<script src="script.js"></script>
+<h3 style="margin-top:15px;">🧠 PHÂN TÍCH TÂM LÝ</h3>
+
+<div class="grid">
+
+<div class="card">Tin tưởng<br><b>${tinTuong}/10</b></div>
+<div class="card">Bực bội<br><b>${bucBoi}/10</b></div>
+<div class="card">Hào hứng<br><b>${haoHung}/10</b></div>
+
+</div>
+
+<div class="insight">
+
+<b>💡 Insight khách hàng</b><br><br>
+
+Đánh giá tổng thể cho thấy khách hàng ${
+score>0 ? "có cảm xúc tích cực với sản phẩm." :
+score<0 ? "đang có trải nghiệm chưa tốt với sản phẩm." :
+"có phản hồi trung lập."
+}
+
+<br><br>
+
+Phản hồi này giúp doanh nghiệp hiểu rõ hơn về trải nghiệm người dùng và cải thiện sản phẩm cũng như dịch vụ chăm sóc khách hàng.
+
+</div>
+
+`;
+
+document.getElementById("result").innerHTML=resultHTML;
+
+}
+
+</script>
 
 </body>
 </html>
