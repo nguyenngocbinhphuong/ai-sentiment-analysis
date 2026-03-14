@@ -88,9 +88,9 @@ border-radius:6px;
 
 <script>
 
-async function analyze(){
+function analyze(){
 
-let text=document.getElementById("textInput").value;
+let text=document.getElementById("textInput").value.toLowerCase();
 let result=document.getElementById("result");
 
 if(text===""){
@@ -98,66 +98,80 @@ alert("Vui lòng nhập phản hồi khách hàng");
 return;
 }
 
-result.innerHTML="⏳ AI đang phân tích...";
+let positiveWords=[
+"tốt","tuyệt","hài lòng","ưng","ok","đẹp","nhanh","chất lượng","thích","ổn"
+];
 
-const API_KEY="AIzaSyAojNeQs-zG5oby3Xjnu6-T_nWQXOxWFt0";
+let negativeWords=[
+"tệ","kém","chậm","bực","thất vọng","xấu","dở","lâu","tệ hại"
+];
 
-let prompt = `
-Bạn là chuyên gia phân tích phản hồi khách hàng.
+let score=0;
 
-Hãy đọc phản hồi sau:
-"${text}"
+positiveWords.forEach(word=>{
+if(text.includes(word)) score++;
+});
 
-Trả lời theo dạng:
+negativeWords.forEach(word=>{
+if(text.includes(word)) score--;
+});
 
-1. Cảm xúc khách hàng
-2. Chủ đề phản hồi
-3. Nhận xét ngắn
-4. Phản hồi lại khách hàng như nhân viên CSKH
-`;
+let sentiment="Trung lập 😐";
 
-try{
+if(score>0) sentiment="Tích cực 😊";
+if(score<0) sentiment="Tiêu cực 😡";
 
-let response = await fetch(
-"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key="+API_KEY,
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-contents:[
-{
-parts:[
-{ text: prompt }
-]
+/* phân tích chủ đề */
+
+let topic="Chung";
+
+if(text.includes("giao")) topic="Giao hàng";
+if(text.includes("sản phẩm")) topic="Chất lượng sản phẩm";
+if(text.includes("giá")) topic="Giá cả";
+if(text.includes("dịch vụ")) topic="Dịch vụ";
+
+/* phản hồi */
+
+let reply="";
+
+if(sentiment.includes("Tích cực")){
+
+reply="Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi bạn hài lòng với sản phẩm và dịch vụ.";
+
 }
-]
-})
+
+else if(sentiment.includes("Tiêu cực")){
+
+reply="Chúng tôi xin lỗi vì trải nghiệm chưa tốt. Chúng tôi sẽ kiểm tra và cải thiện dịch vụ trong thời gian tới.";
+
 }
-);
 
-let data = await response.json();
+else{
 
-console.log(data);
+reply="Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi sẽ tiếp tục cải thiện sản phẩm và dịch vụ.";
 
-let ai=data.candidates[0].content.parts[0].text;
+}
 
 result.innerHTML=`
 
 <h3>📊 Kết quả phân tích AI</h3>
 
 <div class="insight">
-<pre>${ai}</pre>
+
+<b>Cảm xúc khách hàng:</b> ${sentiment}
+
+<br><br>
+
+<b>Chủ đề phản hồi:</b> ${topic}
+
+<br><br>
+
+<b>Phản hồi CSKH:</b><br>
+${reply}
+
 </div>
 
 `;
-
-}catch(error){
-
-result.innerHTML="❌ Lỗi khi gọi AI";
-
-}
 
 }
 
