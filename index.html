@@ -93,64 +93,123 @@ function analyze(){
 let text=document.getElementById("textInput").value.toLowerCase();
 let result=document.getElementById("result");
 
-if(text===""){
+if(text.trim()===""){
 alert("Vui lòng nhập phản hồi khách hàng");
 return;
 }
 
-let positiveWords=[
-"tốt","tuyệt","hài lòng","ưng","ok","đẹp","nhanh","chất lượng","thích","ổn"
+/* từ khóa */
+
+let positive=[
+"tốt","tuyệt","hài lòng","ưng","ok","đẹp","nhanh","chất lượng","thích",
+"ổn","rất tốt","quá tốt","tuyệt vời","xuất sắc","hoàn hảo"
 ];
 
-let negativeWords=[
-"tệ","kém","chậm","bực","thất vọng","xấu","dở","lâu","tệ hại"
+let negative=[
+"kém","tệ","chậm","bực","thất vọng","xấu","dở","lâu","tệ hại",
+"không tốt","không ổn","rất chậm","quá lâu","không hài lòng"
 ];
+
+/* tính điểm cảm xúc */
 
 let score=0;
 
-positiveWords.forEach(word=>{
-if(text.includes(word)) score++;
+positive.forEach(w=>{
+if(text.includes(w)) score++;
 });
 
-negativeWords.forEach(word=>{
-if(text.includes(word)) score--;
+negative.forEach(w=>{
+if(text.includes(w)) score--;
 });
+
+/* xác định cảm xúc */
 
 let sentiment="Trung lập 😐";
 
-if(score>0) sentiment="Tích cực 😊";
-if(score<0) sentiment="Tiêu cực 😡";
+if(score>1) sentiment="Tích cực 😊";
+if(score< -1) sentiment="Tiêu cực 😡";
+if(score===1 || score===-1) sentiment="Vừa hài lòng vừa chưa hài lòng 🙂";
 
-/* phân tích chủ đề */
+/* nhận diện chủ đề */
 
-let topic="Chung";
+let topics=[];
 
-if(text.includes("giao")) topic="Giao hàng";
-if(text.includes("sản phẩm")) topic="Chất lượng sản phẩm";
-if(text.includes("giá")) topic="Giá cả";
-if(text.includes("dịch vụ")) topic="Dịch vụ";
+if(text.includes("giao")) topics.push("Giao hàng");
+if(text.includes("ship")) topics.push("Giao hàng");
 
-/* phản hồi */
+if(text.includes("sản phẩm") || text.includes("chất lượng"))
+topics.push("Chất lượng sản phẩm");
+
+if(text.includes("giá") || text.includes("đắt") || text.includes("rẻ"))
+topics.push("Giá cả");
+
+if(text.includes("dịch vụ") || text.includes("nhân viên"))
+topics.push("Dịch vụ khách hàng");
+
+if(text.includes("đóng gói") || text.includes("bao bì"))
+topics.push("Đóng gói");
+
+if(topics.length===0) topics.push("Phản hồi chung");
+
+/* phản hồi CSKH đa dạng */
+
+let positiveReplies=[
+
+"Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi sản phẩm mang lại trải nghiệm tốt cho bạn.",
+"Chúng tôi rất cảm kích khi nhận được phản hồi hài lòng từ bạn. Hy vọng tiếp tục được phục vụ bạn.",
+"Rất vui khi bạn có trải nghiệm tốt với sản phẩm. Cảm ơn bạn đã ủng hộ chúng tôi."
+
+];
+
+let negativeReplies=[
+
+"Chúng tôi xin lỗi vì trải nghiệm của bạn chưa được như mong đợi. Chúng tôi sẽ kiểm tra và cải thiện ngay.",
+"Cảm ơn bạn đã góp ý. Chúng tôi rất tiếc vì sự bất tiện và sẽ cải thiện dịch vụ trong thời gian tới.",
+"Chúng tôi xin lỗi về trải nghiệm chưa tốt và sẽ cố gắng khắc phục để phục vụ bạn tốt hơn."
+
+];
+
+let mixedReplies=[
+
+"Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi rất vui khi bạn hài lòng ở một số điểm và sẽ cải thiện những điểm chưa tốt.",
+"Chúng tôi trân trọng góp ý của bạn. Chúng tôi sẽ giữ vững những điểm tốt và khắc phục những điểm chưa hoàn thiện.",
+"Cảm ơn bạn đã phản hồi chi tiết. Điều này giúp chúng tôi nâng cao chất lượng dịch vụ."
+
+];
+
+let neutralReplies=[
+
+"Cảm ơn bạn đã chia sẻ ý kiến. Phản hồi của bạn giúp chúng tôi cải thiện dịch vụ.",
+"Chúng tôi ghi nhận phản hồi của bạn và sẽ tiếp tục hoàn thiện sản phẩm.",
+"Cảm ơn bạn đã dành thời gian góp ý cho chúng tôi."
+
+];
+
+/* chọn phản hồi random */
+
+function random(arr){
+return arr[Math.floor(Math.random()*arr.length)];
+}
 
 let reply="";
 
 if(sentiment.includes("Tích cực")){
-
-reply="Cảm ơn bạn đã phản hồi tích cực. Chúng tôi rất vui khi bạn hài lòng với sản phẩm và dịch vụ.";
-
+reply=random(positiveReplies);
 }
 
 else if(sentiment.includes("Tiêu cực")){
+reply=random(negativeReplies);
+}
 
-reply="Chúng tôi xin lỗi vì trải nghiệm chưa tốt. Chúng tôi sẽ kiểm tra và cải thiện dịch vụ trong thời gian tới.";
-
+else if(sentiment.includes("Vừa")){
+reply=random(mixedReplies);
 }
 
 else{
-
-reply="Cảm ơn bạn đã chia sẻ phản hồi. Chúng tôi sẽ tiếp tục cải thiện sản phẩm và dịch vụ.";
-
+reply=random(neutralReplies);
 }
+
+/* hiển thị */
 
 result.innerHTML=`
 
@@ -162,11 +221,12 @@ result.innerHTML=`
 
 <br><br>
 
-<b>Chủ đề phản hồi:</b> ${topic}
+<b>Chủ đề phản hồi:</b> ${topics.join(", ")}
 
 <br><br>
 
-<b>Phản hồi CSKH:</b><br>
+<b>Phản hồi CSKH:</b><br><br>
+
 ${reply}
 
 </div>
